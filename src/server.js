@@ -7,6 +7,7 @@ const paypal = require('paypal-rest-sdk');
 const TronWeb = require('tronweb');
 const { saveOrder, getOrder, getAllOrders } = require('./db');
 const paymentProcessor = require('./payment-processor');
+
 // Placeholder for Stripe - User needs to add keys in .env
 // const stripe = require('stripe')(process.env.STRIPE_SECRET_KEY || 'sk_test_placeholder');
 
@@ -16,6 +17,7 @@ const baseUrl = process.env.APP_BASE_URL || `http://localhost:${port}`;
 
 const usdtTrc20Mode = (process.env.USDT_TRC20_MODE || 'real').toLowerCase();
 const tronPrivateKey = process.env.TRON_PRIVATE_KEY || '';
+// FIX: Ensure no extra backticks in the URL string
 const tronFullHost = process.env.TRON_FULL_HOST || 'https://api.trongrid.io';
 const tronUsdtContract = process.env.TRC20_USDT_CONTRACT || 'TR7NHqjeKQxGTCi8q8ZY4pL8otSzgjLj6t';
 
@@ -39,26 +41,59 @@ async function getMarketPrice(asset) {
     const coinId = coinMap[asset];
     
     if (coinId) {
+        // 1) Try CoinGecko
         try {
-            // Add a small delay or better headers if needed, but for now just log
-            const response = await axios.get(`https://api.coingecko.com/api/v3/simple/price?ids=${coinId}&vs_currencies=usd`, {
-                timeout: 5000 // 5s timeout
-            });
+            // FIX: Ensure correct template literal syntax without extra internal backticks
+            const response = await axios.get(
+                `https://api.coingecko.com/api/v3/simple/price?ids=${coinId}&vs_currencies=usd`,
+                { timeout: 5000 }
+            );
             const price = response.data[coinId].usd;
-            console.log(`Fetched price for ${asset} (${coinId}): $${price}`);
+            console.log(`Fetched price for ${asset} (${coinId}) from CoinGecko: $${price}`);
             return price;
         } catch (err) {
             console.error(`CoinGecko Error for ${asset}:`, err.message);
+            
+            // 2) Try Binance as backup
+            try {
+                const symbolMap = {
+                    BTC: 'BTCUSDT',
+                    ETH: 'ETHUSDT',
+                    XRP: 'XRPUSDT',
+                    BNB: 'BNBUSDT',
+                    SOL: 'SOLUSDT',
+                    TRX: 'TRXUSDT',
+                    DOGE: 'DOGEUSDT',
+                    ADA: 'ADAUSDT'
+                };
+                const symbol = symbolMap[asset];
+                
+                if (symbol) {
+                    const resp = await axios.get(
+                        `https://api.binance.com/api/v3/ticker/price?symbol=${symbol}`,
+                        { timeout: 5000 }
+                    );
+                    const price = parseFloat(resp.data.price);
+                    if (!Number.isNaN(price)) {
+                        console.log(`Fetched price for ${asset} from Binance (${symbol}): $${price}`);
+                        return price;
+                    }
+                } else if (asset === 'USDT' || asset === 'USDC') {
+                    return 1.0;
+                }
+            } catch (e2) {
+                console.error(`Binance Error for ${asset}:`, e2.message);
+            }
         }
     } else {
         console.warn(`Unknown asset: ${asset}`);
     }
     
-    // Fallbacks (Updated prices)
+    // 3) Last-resort fallback only if all live sources fail
     const defaults = {
-        'BTC': 65000, 'ETH': 2600, 'USDT': 1.00, 'XRP': 0.60, 
-        'BNB': 600, 'SOL': 150, 'USDC': 1.00, 'TRX': 0.12, 
-        'DOGE': 0.16, 'ADA': 0.45
+        'BTC': 95000, 'ETH': 3500, 'USDT': 1.00, 'XRP': 2.50, 
+        'BNB': 600, 'SOL': 180, 'USDC': 1.00, 'TRX': 0.20, 
+        'DOGE': 0.35, 'ADA': 0.80
     };
     const fallbackPrice = defaults[asset] || 1.00;
     console.log(`Using fallback price for ${asset}: $${fallbackPrice}`);
