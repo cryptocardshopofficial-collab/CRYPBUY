@@ -1,0 +1,849 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <title>CRYPBUY – Buy Crypto</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <style>
+      * {
+        box-sizing: border-box;
+      }
+      body {
+        margin: 0;
+        font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+        background: radial-gradient(circle at top, #020617, #020617 40%, #000000);
+        color: #e5e7eb;
+        min-height: 100vh;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        padding: 24px;
+      }
+      .shell {
+        width: 100%;
+        max-width: 960px;
+        background: rgba(15, 23, 42, 0.96);
+        border-radius: 18px;
+        padding: 24px;
+        box-shadow: 0 24px 80px rgba(15, 23, 42, 0.9);
+        border: 1px solid rgba(148, 163, 184, 0.2);
+        display: grid;
+        grid-template-columns: minmax(0, 1.2fr) minmax(0, 1fr);
+        gap: 24px;
+      }
+      @media (max-width: 768px) {
+        .shell {
+          grid-template-columns: minmax(0, 1fr);
+        }
+      }
+      .badge {
+        display: inline-flex;
+        align-items: center;
+        gap: 6px;
+        border-radius: 999px;
+        padding: 4px 10px;
+        font-size: 12px;
+        background: rgba(15, 118, 110, 0.12);
+        color: #6ee7b7;
+      }
+      .badge-dot {
+        width: 8px;
+        height: 8px;
+        border-radius: 999px;
+        background: #22c55e;
+        box-shadow: 0 0 12px #22c55e;
+      }
+      h1 {
+        font-size: 32px;
+        line-height: 1.1;
+        margin: 14px 0 8px;
+      }
+      .accent {
+        background: linear-gradient(120deg, #22c55e, #06b6d4, #6366f1);
+        -webkit-background-clip: text;
+        color: transparent;
+      }
+      .subline {
+        margin: 0 0 18px;
+        color: #9ca3af;
+        font-size: 14px;
+      }
+      .pill-row {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 8px;
+        margin-bottom: 18px;
+      }
+      .pill {
+        font-size: 11px;
+        border-radius: 999px;
+        padding: 4px 10px;
+        border: 1px solid rgba(148, 163, 184, 0.4);
+        color: #e5e7eb;
+      }
+      .note {
+        font-size: 11px;
+        color: #9ca3af;
+        background: rgba(15, 23, 42, 0.8);
+        border-radius: 12px;
+        padding: 10px 12px;
+        border: 1px dashed rgba(148, 163, 184, 0.6);
+      }
+      .note b {
+        color: #e5e7eb;
+      }
+      .panel {
+        background: radial-gradient(circle at top, #0f172a, #020617);
+        border-radius: 16px;
+        padding: 18px 18px 16px;
+        border: 1px solid rgba(148, 163, 184, 0.35);
+      }
+      .panel-header {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        margin-bottom: 10px;
+        font-size: 12px;
+        color: #9ca3af;
+      }
+      .chip-row {
+        display: flex;
+        gap: 6px;
+        margin-bottom: 12px;
+        flex-wrap: wrap;
+      }
+      .chip {
+        padding: 4px 8px;
+        border-radius: 999px;
+        font-size: 11px;
+        border: 1px solid rgba(148, 163, 184, 0.45);
+        color: #e5e7eb;
+      }
+      .chip.primary {
+        border-color: rgba(45, 212, 191, 0.7);
+        background: rgba(15, 118, 110, 0.12);
+        color: #a5f3fc;
+      }
+      form {
+        display: grid;
+        gap: 10px;
+      }
+      label {
+        font-size: 11px;
+        color: #9ca3af;
+        display: flex;
+        justify-content: space-between;
+        margin-bottom: 3px;
+      }
+      input,
+      select {
+        width: 100%;
+        border-radius: 10px;
+        border: 1px solid rgba(148, 163, 184, 0.5);
+        padding: 8px 9px;
+        font-size: 13px;
+        background: #ffffff;
+        color: #020617;
+      }
+      input:focus,
+      select:focus {
+        outline: 1px solid #22c55e;
+        box-shadow: 0 0 0 1px rgba(34, 197, 94, 0.3);
+      }
+      button {
+        margin-top: 4px;
+        width: 100%;
+        border-radius: 999px;
+        border: none;
+        padding: 9px 10px;
+        font-size: 13px;
+        font-weight: 600;
+        background: linear-gradient(120deg, #22c55e, #06b6d4);
+        color: #020617;
+        cursor: pointer;
+      }
+      button:disabled {
+        opacity: 0.6;
+        cursor: default;
+      }
+      .status {
+        margin-top: 10px;
+        font-size: 12px;
+        color: #9ca3af;
+        min-height: 18px;
+      }
+      .status strong {
+        color: #e5e7eb;
+      }
+      .summary {
+        margin-top: 8px;
+        font-size: 12px;
+        color: #d1d5db;
+      }
+      .summary span {
+        color: #a5b4fc;
+      }
+    </style>
+  </head>
+  <body>
+    <main class="shell">
+      <section>
+        <div class="badge">
+          <span class="badge-dot"></span>
+          Live Platform
+        </div>
+        <h1>
+          CRYP<span class="accent">BUY</span><br />
+          Instant Crypto On‑Ramp
+        </h1>
+        <p class="subline">
+          The fastest way to buy BTC, ETH, USDT, and more with fiat. Secure, fast, and direct to your self-custody wallet.
+        </p>
+        <div class="pill-row">
+          <div class="pill">Instant Processing</div>
+          <div class="pill">Best Market Rates</div>
+          <div class="pill">Secure Payment</div>
+        </div>
+        <p class="note">
+          <b>Secure & Verified:</b> All transactions are processed via secure payment gateways (PayPal & Direct Card). Your crypto is sent immediately after payment confirmation.
+        </p>
+
+        <!-- Live Preview Box -->
+        <div id="live-preview" style="margin-top: 24px; display:none; background: rgba(15, 23, 42, 0.6); border: 1px solid rgba(34, 197, 94, 0.3); border-radius: 12px; padding: 16px;">
+            <div style="font-size: 11px; color: #9ca3af; margin-bottom: 4px;">ESTIMATED RECEIVE</div>
+            <div style="font-size: 24px; font-weight: bold; color: #4ade80;" id="preview-crypto">0.000000</div>
+            <div style="font-size: 13px; color: #cbd5e1; margin-top: 4px;">
+                Price: <span id="preview-price">$0.00</span>
+            </div>
+        </div>
+      </section>
+      <section class="panel">
+        <div class="panel-header">
+          <span>Buy crypto</span>
+          <span id="health-indicator">Connecting…</span>
+        </div>
+        <div class="chip-row">
+          <div class="chip primary">Step 1 · Enter order</div>
+          <div class="chip">Step 2 · Get quote</div>
+          <div class="chip">Step 3 · Confirm</div>
+        </div>
+        <form id="order-form">
+          <div>
+            <label for="asset">
+              Asset
+              <span>Live pricing</span>
+            </label>
+            <select id="asset" name="asset">
+              <option value="BTC">BTC · Bitcoin</option>
+              <option value="ETH">ETH · Ethereum</option>
+              <option value="USDT">USDT · Tether</option>
+              <option value="XRP">XRP · Ripple</option>
+              <option value="BNB">BNB · Binance Coin</option>
+              <option value="SOL">SOL · Solana</option>
+              <option value="USDC">USDC · USD Coin</option>
+              <option value="TRX">TRX · TRON</option>
+              <option value="DOGE">DOGE · Dogecoin</option>
+              <option value="ADA">ADA · Cardano</option>
+            </select>
+          </div>
+          <div>
+            <label for="fiatAmount">
+              Amount
+              <span>Select currency</span>
+            </label>
+            <div style="display:flex; gap:8px;">
+              <input
+                id="fiatAmount"
+                name="fiatAmount"
+                type="number"
+                min="10"
+                step="10"
+                placeholder="100"
+                required
+                style="flex:1;"
+              />
+              <select id="fiatCurrency" name="fiatCurrency" style="width:110px;">
+                <option value="USD">USD</option>
+                <option value="EUR">EUR</option>
+                <option value="GBP">GBP</option>
+                <option value="CAD">CAD</option>
+                <option value="AUD">AUD</option>
+                <option value="JPY">JPY</option>
+                <option value="AED">AED</option>
+                <option value="INR">INR</option>
+                <option value="CNY">CNY</option>
+                <option value="SAR">SAR</option>
+                <option value="RUB">RUB</option>
+                <option value="BRL">BRL</option>
+                <option value="MXN">MXN</option>
+                <option value="SGD">SGD</option>
+                <option value="NZD">NZD</option>
+                <option value="CHF">CHF</option>
+                <option value="HKD">HKD</option>
+                <option value="SEK">SEK</option>
+                <option value="NOK">NOK</option>
+                <option value="DKK">DKK</option>
+                <option value="PLN">PLN</option>
+                <option value="ZAR">ZAR</option>
+                <option value="TRY">TRY</option>
+                <option value="KRW">KRW</option>
+                <option value="MYR">MYR</option>
+                <option value="THB">THB</option>
+                <option value="PHP">PHP</option>
+                <option value="IDR">IDR</option>
+                <option value="VND">VND</option>
+                <option value="KWD">KWD</option>
+              </select>
+            </div>
+          </div>
+          <div>
+            <label for="cryptoQuantity">
+              Quantity
+              <span>How much crypto</span>
+            </label>
+            <input
+              id="cryptoQuantity"
+              name="cryptoQuantity"
+              type="number"
+              min="0"
+              step="0.000001"
+              placeholder="0.000000"
+              style="width:100%;"
+            />
+          </div>
+          <div>
+            <label for="country">
+              Country
+              <span>Billing country</span>
+            </label>
+            <select id="country" name="country">
+                <option value="" disabled selected>Select country</option>
+                <option value="US">United States</option>
+                <option value="UK">United Kingdom</option>
+                <option value="CA">Canada</option>
+                <option value="AU">Australia</option>
+                <option value="DE">Germany</option>
+                <option value="FR">France</option>
+                <option value="IT">Italy</option>
+                <option value="ES">Spain</option>
+                <option value="NL">Netherlands</option>
+                <option value="BE">Belgium</option>
+                <option value="CH">Switzerland</option>
+                <option value="SE">Sweden</option>
+                <option value="NO">Norway</option>
+                <option value="DK">Denmark</option>
+                <option value="FI">Finland</option>
+                <option value="IE">Ireland</option>
+                <option value="NZ">New Zealand</option>
+                <option value="JP">Japan</option>
+                <option value="KR">South Korea</option>
+                <option value="CN">China</option>
+                <option value="HK">Hong Kong</option>
+                <option value="SG">Singapore</option>
+                <option value="MY">Malaysia</option>
+                <option value="TH">Thailand</option>
+                <option value="ID">Indonesia</option>
+                <option value="VN">Vietnam</option>
+                <option value="PH">Philippines</option>
+                <option value="IN">India</option>
+                <option value="AE">United Arab Emirates</option>
+                <option value="SA">Saudi Arabia</option>
+                <option value="ZA">South Africa</option>
+                <option value="BR">Brazil</option>
+                <option value="MX">Mexico</option>
+                <option value="AR">Argentina</option>
+                <option value="CO">Colombia</option>
+                <option value="CL">Chile</option>
+                <option value="PE">Peru</option>
+                <option value="RU">Russia</option>
+                <option value="TR">Turkey</option>
+                <option value="PL">Poland</option>
+                <option value="CZ">Czech Republic</option>
+                <option value="HU">Hungary</option>
+                <option value="IL">Israel</option>
+                <option value="EG">Egypt</option>
+                <option value="NG">Nigeria</option>
+                <option value="KE">Kenya</option>
+                <option value="OTHER">Other</option>
+            </select>
+          </div>
+          <div>
+            <label for="walletAddress">
+              Wallet address
+              <span>Self‑custody</span>
+            </label>
+            <input
+              id="walletAddress"
+              name="walletAddress"
+              type="text"
+              autocomplete="off"
+              placeholder="bc1q… or 0x…"
+              required
+            />
+          </div>
+          <div id="network-row" style="display:none;">
+            <label for="network">
+              Network
+              <span>Select chain</span>
+            </label>
+            <select id="network" name="network">
+              <option value="">Select network</option>
+            </select>
+          </div>
+          <button type="submit" id="submit-btn">Get quote and create order</button>
+          <div class="status" id="status"></div>
+          <div class="summary" id="summary"></div>
+
+          <!-- Payment Section -->
+          <div id="payment-panel" style="display:none; margin-top: 16px; padding-top: 16px; border-top: 1px solid rgba(148,163,184,0.2);">
+            <p style="font-size: 12px; color: #9ca3af; margin-bottom: 8px;">Step 4 · Choose Payment Method</p>
+            
+            <div style="display:flex; gap:10px; margin-bottom: 15px;">
+                <button type="button" onclick="togglePaymentMethod('card')" id="tab-card" style="flex:1; padding:10px; border-radius:4px; border:1px solid #ccc; background:#f1f5f9; cursor:pointer;">Card</button>
+                <button type="button" onclick="togglePaymentMethod('paypal')" id="tab-paypal" style="flex:1; padding:10px; border-radius:4px; border:1px solid #ccc; background:white; cursor:pointer;">PayPal</button>
+            </div>
+
+            <!-- Card Form (Redirect to PayPal Guest Checkout) -->
+            <div id="card-form-container">
+                <div style="text-align: center; padding: 20px; background: rgba(15, 23, 42, 0.4); border-radius: 12px; border: 1px solid rgba(148, 163, 184, 0.2);">
+                    <div style="display: flex; justify-content: center; gap: 12px; margin-bottom: 16px;">
+                        <div style="background:white; padding:4px 8px; border-radius:4px;"><span style="color:#1a1f36; font-weight:bold; font-size:12px;">VISA</span></div>
+                        <div style="background:white; padding:4px 8px; border-radius:4px;"><span style="color:#eb001b; font-weight:bold; font-size:12px;">Mastercard</span></div>
+                        <div style="background:white; padding:4px 8px; border-radius:4px;"><span style="color:#006fcf; font-weight:bold; font-size:12px;">Amex</span></div>
+                    </div>
+                    <p style="font-size: 13px; color: #cbd5e1; margin-bottom: 20px; line-height: 1.5;">
+                        To ensure maximum security and <b>prevent 3D Secure/OTP issues</b>, we process all card payments via our secure encrypted gateway.
+                        <br><br>
+                        <span style="color: #9ca3af; font-size: 12px;">You will be redirected to a secure checkout page. You do <b>not</b> need an account.</span>
+                    </p>
+                    <button type="button" id="pay-btn" style="background: linear-gradient(120deg, #3b82f6, #8b5cf6); color: white; width: 100%; padding: 12px;">
+                        Pay with Card
+                    </button>
+                </div>
+            </div>
+
+            <!-- PayPal Container -->
+            <div id="paypal-container" style="display:none; text-align:center; padding:20px;">
+                <p>Pay securely with PayPal</p>
+                <button type="button" id="paypal-btn" style="background:#ffc439; color:black; font-weight:bold; padding:12px; width:100%; border-radius:4px; border:none; cursor:pointer;">
+                    Check out with PayPal
+                </button>
+            </div>
+
+          </div>
+        </form>
+      </section>
+    </main>
+
+    <script>
+      const healthEl = document.getElementById("health-indicator");
+      const form = document.getElementById("order-form");
+      const statusEl = document.getElementById("status");
+      const summaryEl = document.getElementById("summary");
+      const submitBtn = document.getElementById("submit-btn");
+      const paymentPanel = document.getElementById("payment-panel");
+      const payBtn = document.getElementById("pay-btn");
+      const paypalBtn = document.getElementById("paypal-btn");
+      const assetSelect = document.getElementById("asset");
+      const networkRow = document.getElementById("network-row");
+      const networkSelect = document.getElementById("network");
+      const livePreview = document.getElementById("live-preview");
+      const previewCrypto = document.getElementById("preview-crypto");
+      const previewPrice = document.getElementById("preview-price");
+      const fiatAmountInput = document.getElementById("fiatAmount");
+      const fiatCurrencySelect = document.getElementById("fiatCurrency");
+      const cryptoQuantityInput = document.getElementById("cryptoQuantity");
+
+      let currentOrderId = null;
+      let lastEdited = "fiat";
+      let isSyncing = false;
+
+      const networks = {
+        BTC: [
+            { id: 'Bitcoin', name: 'Bitcoin (Native)' },
+            { id: 'BEP20', name: 'BNB Smart Chain (BEP20)' },
+            { id: 'Lightning', name: 'Lightning Network' }
+        ],
+        ETH: [
+            { id: 'ERC20', name: 'Ethereum (ERC20)' },
+            { id: 'BEP20', name: 'BNB Smart Chain (BEP20)' },
+            { id: 'Arbitrum', name: 'Arbitrum One' },
+            { id: 'Optimism', name: 'Optimism' },
+            { id: 'Polygon', name: 'Polygon' },
+            { id: 'Base', name: 'Base' }
+        ],
+        USDT: [
+            { id: 'TRC20', name: 'TRON (TRC20)' },
+            { id: 'ERC20', name: 'Ethereum (ERC20)' },
+            { id: 'BEP20', name: 'BNB Smart Chain (BEP20)' },
+            { id: 'SOL', name: 'Solana' },
+            { id: 'Polygon', name: 'Polygon' },
+            { id: 'Arbitrum', name: 'Arbitrum One' }
+        ],
+        USDC: [
+            { id: 'ERC20', name: 'Ethereum (ERC20)' },
+            { id: 'SOL', name: 'Solana' },
+            { id: 'BEP20', name: 'BNB Smart Chain (BEP20)' },
+            { id: 'Polygon', name: 'Polygon' },
+            { id: 'Base', name: 'Base' }
+        ],
+        XRP: [
+            { id: 'Ripple', name: 'Ripple (Native)' },
+            { id: 'BEP20', name: 'BNB Smart Chain (BEP20)' }
+        ],
+        BNB: [
+            { id: 'BEP20', name: 'BNB Smart Chain (BEP20)' },
+            { id: 'BEP2', name: 'BNB Beacon Chain (BEP2)' }
+        ],
+        SOL: [
+            { id: 'Solana', name: 'Solana (Native)' },
+            { id: 'BEP20', name: 'BNB Smart Chain (BEP20)' }
+        ],
+        TRX: [
+            { id: 'TRC20', name: 'TRON (Native)' },
+            { id: 'BEP20', name: 'BNB Smart Chain (BEP20)' }
+        ],
+        DOGE: [
+            { id: 'Dogecoin', name: 'Dogecoin (Native)' },
+            { id: 'BEP20', name: 'BNB Smart Chain (BEP20)' }
+        ],
+        ADA: [
+            { id: 'Cardano', name: 'Cardano (Native)' },
+            { id: 'BEP20', name: 'BNB Smart Chain (BEP20)' }
+        ]
+      };
+
+      function updateNetworks() {
+        const asset = assetSelect.value;
+        const options = networks[asset] || [];
+        
+        networkSelect.innerHTML = '<option value="">Select network</option>';
+        
+        if (options.length > 0) {
+            options.forEach(net => {
+                const opt = document.createElement('option');
+                opt.value = net.id;
+                opt.textContent = net.name;
+                networkSelect.appendChild(opt);
+            });
+            networkRow.style.display = 'block';
+        } else {
+            networkRow.style.display = 'none';
+        }
+      }
+
+      // Initial Load
+      updateNetworks();
+
+      // Toggle Network Row for all assets
+      assetSelect.addEventListener('change', () => {
+        updateNetworks();
+        updatePreview();
+      });
+
+      // Live Preview Logic
+      function debounce(func, wait) {
+        let timeout;
+        return function(...args) {
+            clearTimeout(timeout);
+            timeout = setTimeout(() => func.apply(this, args), wait);
+        };
+      }
+
+      async function fetchPreview() {
+        const asset = assetSelect.value;
+        const currency = fiatCurrencySelect.value;
+
+        try {
+            if (lastEdited === "crypto") {
+                const qty = parseFloat(cryptoQuantityInput.value);
+                if (!qty || isNaN(qty) || qty <= 0) {
+                    livePreview.style.display = 'none';
+                    return;
+                }
+
+                const res = await fetch("/api/quote-from-crypto", {
+                    method: "POST",
+                    headers: { "Content-Type": "application/json" },
+                    body: JSON.stringify({ asset, cryptoAmount: qty, fiatCurrency: currency })
+                });
+
+                if (!res.ok) return;
+
+                const data = await res.json();
+
+                isSyncing = true;
+                fiatAmountInput.value = data.fiatAmount;
+                isSyncing = false;
+
+                livePreview.style.display = 'block';
+                previewCrypto.textContent = `${data.cryptoAmount} ${data.asset}`;
+                previewPrice.textContent = `1 ${data.asset} ≈ $${data.rate.toLocaleString()}`;
+            } else {
+                const amount = parseFloat(fiatAmountInput.value);
+                if (!amount || isNaN(amount) || amount <= 0) {
+                    livePreview.style.display = 'none';
+                    return;
+                }
+
+                const res = await fetch("/api/quote", {
+                    method: "POST",
+                    headers: { "Content-Type": "application/json" },
+                    body: JSON.stringify({ asset, fiatAmount: amount, fiatCurrency: currency })
+                });
+
+                if (!res.ok) return;
+
+                const data = await res.json();
+
+                isSyncing = true;
+                cryptoQuantityInput.value = data.cryptoAmount;
+                isSyncing = false;
+
+                livePreview.style.display = 'block';
+                previewCrypto.textContent = `${data.cryptoAmount} ${data.asset}`;
+                previewPrice.textContent = `1 ${data.asset} ≈ $${data.rate.toLocaleString()}`;
+            }
+        } catch (e) {
+            console.error("Preview error:", e);
+        }
+      }
+
+      const updatePreview = debounce(fetchPreview, 500);
+
+      fiatAmountInput.addEventListener('input', () => {
+        if (isSyncing) return;
+        lastEdited = "fiat";
+        updatePreview();
+      });
+
+      fiatCurrencySelect.addEventListener('change', () => {
+        updatePreview();
+      });
+
+      cryptoQuantityInput.addEventListener('input', () => {
+        if (isSyncing) return;
+        lastEdited = "crypto";
+        updatePreview();
+      });
+
+      // Toggle Payment Methods
+      window.togglePaymentMethod = function(method) {
+        if (method === 'card') {
+            document.getElementById('card-form-container').style.display = 'block';
+            document.getElementById('paypal-container').style.display = 'none';
+            document.getElementById('tab-card').style.background = '#f1f5f9';
+            document.getElementById('tab-paypal').style.background = 'white';
+        } else {
+            document.getElementById('card-form-container').style.display = 'none';
+            document.getElementById('paypal-container').style.display = 'block';
+            document.getElementById('tab-card').style.background = 'white';
+            document.getElementById('tab-paypal').style.background = '#f1f5f9';
+        }
+      }
+
+      // PayPal Handler
+      paypalBtn.addEventListener('click', async () => {
+        if (!currentOrderId) return;
+        
+        paypalBtn.textContent = "Redirecting to PayPal...";
+        paypalBtn.disabled = true;
+
+        try {
+            const res = await fetch('/api/paypal/create-payment', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ orderId: currentOrderId })
+            });
+            const data = await res.json();
+            
+            if (data.approvalUrl) {
+                // Open PayPal in new window
+                window.location.href = data.approvalUrl;
+            } else {
+                alert('PayPal error: ' + (data.error || 'Unknown error'));
+                paypalBtn.disabled = false;
+                paypalBtn.textContent = "Check out with PayPal";
+            }
+        } catch (e) {
+            console.error(e);
+            alert('Could not start PayPal payment');
+            paypalBtn.disabled = false;
+            paypalBtn.textContent = "Check out with PayPal";
+        }
+      });
+
+      async function checkHealth() {
+        try {
+          const res = await fetch("/api/health");
+          if (!res.ok) throw new Error();
+          const data = await res.json();
+          healthEl.textContent = data.status === "ok" ? "System Online" : "System Issue";
+        } catch {
+          healthEl.textContent = "System Offline";
+        }
+      }
+
+      checkHealth();
+
+      form.addEventListener("submit", async (event) => {
+        event.preventDefault();
+        statusEl.textContent = "";
+        summaryEl.textContent = "";
+        paymentPanel.style.display = "none";
+        currentOrderId = null;
+
+        const asset = document.getElementById("asset").value;
+        const fiatAmount = document.getElementById("fiatAmount").value;
+        const fiatCurrency = document.getElementById("fiatCurrency").value;
+        const cryptoQuantity = document.getElementById("cryptoQuantity").value;
+        const walletAddress = document.getElementById("walletAddress").value.trim();
+        const country = document.getElementById("country").value;
+        const network = document.getElementById("network").value;
+
+        if ((!fiatAmount && !cryptoQuantity) || !walletAddress || !country) {
+          statusEl.textContent = "Enter amount or quantity, wallet address, and country.";
+          return;
+        }
+
+        if (!network) {
+          statusEl.textContent = "Select a network.";
+          return;
+        }
+
+        submitBtn.disabled = true;
+        submitBtn.textContent = "Requesting quote…";
+
+        try {
+          let quoteRes;
+
+          if (cryptoQuantity && Number(cryptoQuantity) > 0) {
+            quoteRes = await fetch("/api/quote-from-crypto", {
+              method: "POST",
+              headers: { "Content-Type": "application/json" },
+              body: JSON.stringify({ asset, cryptoAmount: cryptoQuantity, fiatCurrency })
+            });
+          } else {
+            quoteRes = await fetch("/api/quote", {
+              method: "POST",
+              headers: { "Content-Type": "application/json" },
+              body: JSON.stringify({ asset, fiatAmount, fiatCurrency })
+            });
+          }
+
+          if (!quoteRes.ok) throw new Error("Quote failed");
+          const quote = await quoteRes.json();
+
+          const finalFiatAmount = quote.fiatAmount;
+
+          const orderRes = await fetch("/api/order", {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({ asset, fiatAmount: finalFiatAmount, fiatCurrency, walletAddress, country, network })
+          });
+
+          if (!orderRes.ok) {
+            const err = await orderRes.json().catch(() => ({}));
+            throw new Error(err.error || "Order failed");
+          }
+
+          const order = await orderRes.json();
+          currentOrderId = order.orderId;
+
+          statusEl.innerHTML =
+            "Order " +
+            "<strong>" +
+            order.orderId +
+            "</strong>" +
+            " created. Proceed to payment.";
+
+          const rawFiat = quote.fiatAmount ?? fiatAmount;
+          const fiatNumber = Number(rawFiat);
+          const fiatDisplay = Number.isFinite(fiatNumber) ? fiatNumber.toFixed(2) : String(rawFiat);
+          const currencyCode = quote.fiatCurrency || fiatCurrency || "USD";
+
+          function getCurrencySymbol(code) {
+            const map = {
+              USD: "$", EUR: "€", GBP: "£", INR: "₹", AED: "AED ", CNY: "¥",
+              AUD: "A$", CAD: "C$", JPY: "¥", SAR: "SAR ", RUB: "₽", BRL: "R$",
+              MXN: "Mex$", SGD: "S$", NZD: "NZ$", CHF: "Fr", HKD: "HK$",
+              SEK: "kr", NOK: "kr", DKK: "kr", PLN: "zł", ZAR: "R",
+              TRY: "₺", KRW: "₩", MYR: "RM", THB: "฿", PHP: "₱",
+              IDR: "Rp", VND: "₫", KWD: "KD"
+            };
+            return map[code] || code + " ";
+          }
+
+          const symbol = getCurrencySymbol(currencyCode);
+
+          summaryEl.innerHTML =
+            "Ordering " +
+            "<span>" +
+            quote.cryptoAmount +
+            " " +
+            quote.asset +
+            "</span> " +
+            "for " +
+            "<span>" +
+            symbol +
+            fiatDisplay +
+            "</span>.";
+            
+          paymentPanel.style.display = "block";
+          payBtn.textContent = "Confirm card payment of " + symbol + fiatDisplay;
+          payBtn.disabled = false;
+
+        } catch (error) {
+          statusEl.textContent = error.message || "Something went wrong.";
+        } finally {
+          submitBtn.disabled = false;
+          submitBtn.textContent = "Get quote and create order";
+        }
+      });
+
+      function luhnCheck(val) {
+          let sum = 0;
+          let shouldDouble = false;
+          for (let i = val.length - 1; i >= 0; i--) {
+              let digit = parseInt(val.charAt(i));
+              if (shouldDouble) {
+                  if ((digit *= 2) > 9) digit -= 9;
+              }
+              sum += digit;
+              shouldDouble = !shouldDouble;
+          }
+          return (sum % 10) === 0;
+      }
+
+      payBtn.addEventListener("click", async () => {
+        if (!currentOrderId) return;
+        
+        payBtn.disabled = true;
+        payBtn.textContent = "Redirecting to Secure Gateway...";
+        
+        try {
+            const res = await fetch('/api/paypal/create-payment', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ orderId: currentOrderId })
+            });
+            const data = await res.json();
+            
+            if (data.approvalUrl) {
+                // Open PayPal (Guest Checkout)
+                window.location.href = data.approvalUrl;
+            } else {
+                alert('Payment Gateway Error: ' + (data.error || 'Unknown error'));
+                payBtn.disabled = false;
+                payBtn.textContent = "Pay with Card";
+            }
+        } catch (e) {
+            console.error(e);
+            alert('Could not start secure payment');
+            payBtn.disabled = false;
+            payBtn.textContent = "Pay with Card";
+        }
+      });
+    </script>
+  </body>
+ </html>

@@ -1,0 +1,193 @@
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>CRYPBUY Admin Dashboard</title>
+    <style>
+        body {
+            font-family: system-ui, -apple-system, sans-serif;
+            background: #0f172a;
+            color: #e2e8f0;
+            margin: 0;
+            padding: 20px;
+        }
+        .container {
+            max-width: 1000px;
+            margin: 0 auto;
+        }
+        h1 {
+            border-bottom: 1px solid #334155;
+            padding-bottom: 15px;
+            margin-bottom: 30px;
+        }
+        .card {
+            background: #1e293b;
+            border: 1px solid #334155;
+            border-radius: 8px;
+            padding: 20px;
+            margin-bottom: 15px;
+        }
+        .status-badge {
+            display: inline-block;
+            padding: 4px 8px;
+            border-radius: 4px;
+            font-size: 12px;
+            font-weight: bold;
+            text-transform: uppercase;
+        }
+        .status-completed { background: #064e3b; color: #6ee7b7; }
+        .status-pending { background: #451a03; color: #fdba74; }
+        .status-paid { background: #1e3a8a; color: #93c5fd; border: 1px solid #3b82f6; }
+
+        .order-header {
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: 10px;
+            font-size: 14px;
+            color: #94a3b8;
+        }
+        .order-details {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 10px;
+        }
+        .detail-item strong {
+            display: block;
+            color: #64748b;
+            font-size: 11px;
+        }
+        .detail-item span {
+            font-size: 15px;
+        }
+        .tx-hash {
+            font-family: monospace;
+            background: #0f172a;
+            padding: 8px;
+            border-radius: 4px;
+            margin-top: 10px;
+            word-break: break-all;
+            font-size: 12px;
+        }
+        button {
+            background: #2563eb;
+            color: white;
+            border: none;
+            padding: 8px 16px;
+            border-radius: 4px;
+            cursor: pointer;
+        }
+        button:hover { background: #1d4ed8; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div style="display:flex; justify-content:space-between; align-items:center;">
+            <h1>CRYPBUY Admin</h1>
+            <button onclick="loadOrders()">Refresh Orders</button>
+        </div>
+        <div id="orders-list">Loading...</div>
+    </div>
+
+    <script>
+        async function loadOrders() {
+            const list = document.getElementById('orders-list');
+            try {
+                const res = await fetch('/api/admin/orders');
+                const orders = await res.json();
+                
+                if (orders.length === 0) {
+                    list.innerHTML = '<p>No orders found.</p>';
+                    return;
+                }
+
+                list.innerHTML = orders.map(o => `
+                    <div class="card">
+                        <div class="order-header">
+                            <span>#${o.orderId}</span>
+                            <span>${new Date(o.createdAt).toLocaleString()}</span>
+                        </div>
+                        <div style="margin-bottom:15px; display:flex; justify-content:space-between; align-items:center;">
+                            <span class="status-badge status-${o.status}">${o.status}</span>
+                            <span style="font-size:18px; font-weight:bold;">
+                                ${o.fiatAmount} ${o.fiatCurrency || 'USD'}
+                            </span>
+                        </div>
+                        <div class="order-details">
+                            <div class="detail-item">
+                                <strong>ASSET</strong>
+                                <span style="color:#fbbf24; font-weight:bold;">${o.cryptoAmount} ${o.asset}</span>
+                            </div>
+                            <div class="detail-item">
+                                <strong>COUNTRY</strong>
+                                <span>${o.country || 'N/A'}</span>
+                            </div>
+                            <div class="detail-item">
+                                <strong>WALLET</strong>
+                                <span style="font-family:monospace; background:#334155; padding:2px 4px; border-radius:4px;">${o.walletAddress}</span>
+                            </div>
+                            ${o.network ? `
+                            <div class="detail-item">
+                                <strong>NETWORK</strong>
+                                <span style="color:#a5f3fc;">${o.network}</span>
+                            </div>
+                            ` : ''}
+                            ${o.status === 'completed' ? `
+                                <div class="detail-item">
+                                    <strong>PAYMENT ID</strong>
+                                    <span>${o.paymentId || 'N/A'}</span>
+                                </div>
+                            ` : ''}
+                        </div>
+                        
+                        ${o.status === 'paid' ? `
+                            <div style="margin-top:15px; padding-top:15px; border-top:1px solid #334155;">
+                                <p style="font-size:13px; color:#93c5fd; margin-bottom:10px;">
+                                    ⚠️ <strong>Action Required:</strong> Verify payment of 
+                                    <strong>${o.fiatAmount} ${o.fiatCurrency || 'USD'}</strong> in PayPal. 
+                                    Then send <strong>${o.cryptoAmount} ${o.asset}</strong> to the wallet above.
+                                </p>
+                                <button onclick="markAsSent('${o.orderId}')" style="background:#16a34a;">
+                                    ✅ Confirm Crypto Sent
+                                </button>
+                            </div>
+                        ` : ''}
+
+                        ${o.txHash ? `<div class="tx-hash">TX/Ref: ${o.txHash}</div>` : ''}
+                    </div>
+                `).join('');
+            } catch (e) {
+                list.innerHTML = '<p style="color:red">Failed to load orders.</p>';
+            }
+        }
+        
+        async function markAsSent(orderId) {
+            const tx = prompt("Enter Transaction Hash (TXID) or leave empty if not available:");
+            if (tx === null) return;
+
+            try {
+                const res = await fetch(`/api/admin/order/${orderId}/complete`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ txHash: tx })
+                });
+                const data = await res.json();
+                if (data.success) {
+                    alert("Order marked as completed!");
+                    loadOrders();
+                } else {
+                    alert("Error: " + data.error);
+                }
+            } catch (e) {
+                console.error(e);
+                alert("Failed to update order.");
+            }
+        }
+        
+        loadOrders();
+        // Auto refresh every 10s
+        setInterval(loadOrders, 10000);
+    </script>
+</body>
+</html>
